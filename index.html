@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Juilee — Web Portfolio</title>
+<meta name="description" content="Portfolio of Juilee, M.S. Software Engineering student at San José State University: web design, front-end development and interactive learning materials.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Layout: one left-aligned column, 1100px max; sections separated by hairlines, projects in an auto-fit grid. */
+:root {
+  --bg: #f6f7fa;
+  --surface: #ffffff;
+  --ink: #141a2b;
+  --muted: #5a6275;
+  --line: #dde1ea;
+  --accent: #0b4fa8;     /* blue */
+  --accent-2: #c99700;   /* gold, used sparingly */
+  --accent-ink: #ffffff;
+  --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  --radius: 10px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1320; --surface: #171c2c; --ink: #e8ebf3; --muted: #a2a9bb;
+    --line: #2a3145; --accent: #7fb0ff; --accent-2: #f0c445; --accent-ink: #0f1320;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1320; --surface: #171c2c; --ink: #e8ebf3; --muted: #a2a9bb;
+  --line: #2a3145; --accent: #7fb0ff; --accent-2: #f0c445; --accent-ink: #0f1320;
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 400 1rem/1.6 var(--font-body);
+}
+a { color: var(--accent); text-underline-offset: 3px; }
+a:hover { text-decoration-thickness: 2px; }
+:focus-visible { outline: 3px solid var(--accent-2); outline-offset: 2px; border-radius: 4px; }
+h1, h2, h3 { font-family: var(--font-display); line-height: 1.15; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(2.2rem, 5vw, 3.4rem); font-weight: 700; letter-spacing: -0.02em; }
+h2 { font-size: 1.6rem; font-weight: 700; }
+h3 { font-size: 1.15rem; font-weight: 600; }
+p { margin: 0; }
+img { max-width: 100%; }
+
+.skip { position: absolute; left: -999px; top: 8px; background: var(--accent); color: var(--accent-ink); padding: 8px 12px; border-radius: 6px; }
+.skip:focus { left: 16px; }
+
+.wrap { max-width: 1100px; margin: 0 auto; padding: 0 clamp(16px, 4vw, 40px); }
+
+/* Header */
+.site-head { border-bottom: 1px solid var(--line); background: var(--surface); }
+.site-head .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 60px; flex-wrap: wrap; }
+.brand { font-family: var(--font-mono); font-weight: 500; color: var(--ink); text-decoration: none; }
+.brand span { color: var(--accent); }
+nav ul { list-style: none; display: flex; gap: 20px; margin: 0; padding: 0; flex-wrap: wrap; }
+nav a { color: var(--muted); text-decoration: none; font-weight: 500; font-size: 0.95rem; }
+nav a:hover { color: var(--ink); }
+.theme-btn { font: inherit; font-size: 0.85rem; background: none; border: 1px solid var(--line); color: var(--ink); padding: 6px 12px; border-radius: 999px; cursor: pointer; }
+.theme-btn:hover { border-color: var(--accent); }
+
+/* Intro */
+.intro { padding: clamp(48px, 8vw, 88px) 0 48px; display: grid; grid-template-columns: 1.4fr 1fr; gap: 48px; align-items: end; }
+.eyebrow { font-family: var(--font-mono); font-size: 0.85rem; color: var(--muted); margin-bottom: 16px; }
+.eyebrow b { color: var(--accent); font-weight: 500; }
+.lede { font-size: 1.15rem; color: var(--muted); max-width: 58ch; margin-top: 20px; }
+.cta-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 28px; }
+.btn { display: inline-block; padding: 10px 18px; border-radius: 8px; font-weight: 600; text-decoration: none; border: 1px solid var(--accent); }
+.btn-primary { background: var(--accent); color: var(--accent-ink); }
+.btn-ghost { color: var(--accent); }
+.btn:hover { text-decoration: none; filter: brightness(1.08); }
+.facts { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px 22px; display: grid; gap: 12px; font-size: 0.95rem; }
+.facts div { display: grid; grid-template-columns: 110px 1fr; gap: 12px; }
+.facts dt { font-family: var(--font-mono); font-size: 0.8rem; color: var(--muted); padding-top: 2px; }
+.facts dd { margin: 0; }
+dl { margin: 0; }
+
+/* Sections */
+section.block { padding: 56px 0; border-top: 1px solid var(--line); }
+.sec-head { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; margin-bottom: 28px; }
+.sec-head p { color: var(--muted); max-width: 60ch; }
+
+/* Skills */
+.skills { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+.skill { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; display: grid; gap: 10px; align-content: start; }
+.skill .role { font-family: var(--font-mono); font-size: 0.78rem; color: var(--muted); }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; padding: 0; margin: 0; }
+.tags li { font-family: var(--font-mono); font-size: 0.78rem; padding: 3px 8px; border-radius: 5px; background: color-mix(in srgb, var(--accent) 10%, transparent); color: var(--ink); }
+
+/* Projects */
+.projects { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 20px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column; }
+.thumb { aspect-ratio: 16 / 9; border-bottom: 1px solid var(--line); position: relative; overflow: hidden; }
+/* CSS-drawn placeholder thumbnails: swap for <img src="screenshots/project.png" alt="..."> */
+.thumb.t1 { background: linear-gradient(135deg, #0b4fa8 0 50%, #c99700 50% 100%); }
+.thumb.t1::after { content: "Aa  4.5:1"; position: absolute; inset: 0; display: grid; place-items: center; font: 700 2rem var(--font-display); color: #fff; text-shadow: 0 1px 0 rgba(0,0,0,.2); }
+.thumb-img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; object-position: top; border-bottom: 1px solid var(--line); }
+.card-body { padding: 20px; display: grid; gap: 12px; flex: 1; align-content: start; }
+.card-body p { color: var(--muted); font-size: 0.95rem; }
+.card-meta { font-family: var(--font-mono); font-size: 0.78rem; color: var(--muted); }
+.card-links { display: flex; gap: 16px; padding: 0 20px 20px; font-weight: 600; font-size: 0.95rem; }
+.live-pill { display: inline-block; font-family: var(--font-mono); font-size: 0.72rem; padding: 2px 8px; border-radius: 999px; background: var(--accent-2); color: #1a1400; margin-left: 6px; vertical-align: middle; }
+
+/* Demo: contrast checker */
+.demo { display: grid; grid-template-columns: 1fr 1.1fr; gap: 24px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: clamp(18px, 3vw, 28px); }
+.controls { display: grid; gap: 16px; align-content: start; }
+.field { display: grid; gap: 6px; }
+.field label { font-weight: 600; font-size: 0.9rem; }
+.color-input { display: flex; gap: 8px; }
+.color-input input[type="color"] { width: 48px; height: 42px; padding: 2px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); cursor: pointer; }
+.color-input input[type="text"] { flex: 1; min-width: 0; font: 500 1rem var(--font-mono); padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); text-transform: uppercase; }
+.color-input input[aria-invalid="true"] { border-color: #c62828; }
+.swap { justify-self: start; font: inherit; font-weight: 600; font-size: 0.9rem; padding: 8px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); cursor: pointer; }
+.swap:hover { border-color: var(--accent); }
+.preview { border-radius: 8px; padding: 22px; border: 1px solid var(--line); display: grid; gap: 8px; }
+.preview .big { font: 700 1.5rem var(--font-display); }
+.ratio-row { display: flex; align-items: baseline; gap: 12px; margin-top: 16px; flex-wrap: wrap; }
+.ratio { font: 700 2.4rem var(--font-display); font-variant-numeric: tabular-nums; }
+.results { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 6px; }
+.results li { display: flex; justify-content: space-between; gap: 12px; font-size: 0.92rem; padding: 6px 0; border-bottom: 1px dashed var(--line); }
+.chip { font-family: var(--font-mono); font-size: 0.78rem; font-weight: 500; padding: 2px 10px; border-radius: 999px; }
+.chip.pass { background: #d7f2df; color: #0d5a26; }
+.chip.fail { background: #fbdcdc; color: #8a1c1c; }
+.error { color: #c62828; font-size: 0.85rem; min-height: 1.2em; }
+
+/* Experience */
+.timeline { display: grid; gap: 0; }
+.entry { display: grid; grid-template-columns: 160px 1fr; gap: 24px; padding: 18px 0; border-bottom: 1px solid var(--line); }
+.entry:last-child { border-bottom: 0; }
+.entry .when { font-family: var(--font-mono); font-size: 0.85rem; color: var(--muted); padding-top: 3px; }
+.entry ul { margin: 8px 0 0; padding-left: 18px; color: var(--muted); }
+
+/* Contact */
+.contact { display: flex; justify-content: space-between; align-items: center; gap: 24px; flex-wrap: wrap; }
+.contact-list { list-style: none; display: flex; gap: 20px; flex-wrap: wrap; padding: 0; margin: 0; font-weight: 600; }
+footer { padding: 32px 0 48px; color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--line); }
+
+@media (max-width: 760px) {
+  .intro, .demo { grid-template-columns: 1fr; }
+  .entry { grid-template-columns: 1fr; gap: 4px; }
+  nav ul { gap: 14px; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="site-head">
+  <div class="wrap">
+    <a class="brand" href="#top">juilee<span>.dev</span></a>
+    <nav aria-label="Main">
+      <ul>
+        <li><a href="#work">Work</a></li>
+        <li><a href="#demo">Live demo</a></li>
+        <li><a href="#experience">Experience</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </nav>
+    <button class="theme-btn" id="themeBtn" type="button" aria-pressed="false">Dark mode</button>
+  </div>
+</header>
+
+<main id="main">
+  <div class="wrap">
+
+    <!-- INTRO -->
+    <section class="intro" id="top" aria-labelledby="intro-title">
+      <div>
+        <p class="eyebrow"><b>M.S. Software Engineering</b> · San José State University</p>
+        <!-- EDIT: add your last name -->
+        <h1 id="intro-title">Hi, I'm Juilee. I build accessible websites and interactive learning tools.</h1>
+        <p class="lede">I design and code in HTML, CSS and JavaScript, from the layout and graphics to the finished page. I like work where clean code helps real people, like faculty setting up a course or students finding what they need on the first try.</p>
+        <div class="cta-row">
+          <a class="btn btn-primary" href="#work">See my work</a>
+          <!-- EDIT: put resume.pdf next to this file, or link to it on Google Drive -->
+          <a class="btn btn-ghost" href="resume.pdf">Download resume</a>
+        </div>
+      </div>
+      <dl class="facts" aria-label="Quick facts">
+        <div><dt>Studying</dt><dd>M.S. Software Engineering, SJSU</dd></div>
+        <!-- EDIT: graduation term -->
+        <div><dt>Graduating</dt><dd>[Month Year]</dd></div>
+        <div><dt>Front end</dt><dd>HTML · CSS · JavaScript</dd></div>
+        <div><dt>Focus</dt><dd>Web design, accessibility (WCAG 2.2), multimedia</dd></div>
+        <div><dt>Location</dt><dd>San José, CA · on campus</dd></div>
+      </dl>
+    </section>
+
+    <!-- SKILLS -->
+    <section class="block" aria-labelledby="skills-title">
+      <div class="sec-head">
+        <h2 id="skills-title">What I bring</h2>
+        <p>Grouped by the kind of work they support.</p>
+      </div>
+      <div class="skills">
+        <article class="skill">
+          <p class="role">01 · Build</p>
+          <h3>Web development</h3>
+          <p>Responsive, semantic pages that work on any screen and with a keyboard or screen reader.</p>
+          <!-- EDIT: keep only what you can talk about in an interview -->
+          <ul class="tags"><li>HTML5</li><li>CSS Grid/Flexbox</li><li>JavaScript</li><li>Git/GitHub</li><li>WordPress</li></ul>
+        </article>
+        <article class="skill">
+          <p class="role">02 · Design</p>
+          <h3>Visual &amp; multimedia</h3>
+          <p>Layouts, graphics, slides and short tutorials that make information easy to scan.</p>
+          <ul class="tags"><li>Figma</li><li>Canva</li><li>Adobe Express</li><li>Google Slides</li><li>PowerPoint</li></ul>
+        </article>
+        <article class="skill">
+          <p class="role">03 · Support</p>
+          <h3>Teaching tech</h3>
+          <p>Helping faculty and students use online learning tools, in person or by email.</p>
+          <ul class="tags"><li>Canvas LMS</li><li>Microsoft 365</li><li>Google Workspace</li><li>Zoom</li></ul>
+        </article>
+        <article class="skill">
+          <p class="role">04 · Communicate</p>
+          <h3>Writing &amp; docs</h3>
+          <p>Clear how-to guides, reports and email replies written for non-technical readers.</p>
+          <ul class="tags"><li>Technical writing</li><li>Markdown</li><li>Google Docs</li></ul>
+        </article>
+      </div>
+    </section>
+
+    <!-- PROJECTS -->
+    <section class="block" id="work" aria-labelledby="work-title">
+      <div class="sec-head">
+        <h2 id="work-title">Selected work</h2>
+        <p>Tools for teaching and learning, each with a live version and source code.</p>
+      </div>
+      <div class="projects">
+
+        <article class="card">
+          <div class="thumb t1" role="img" aria-label="Blue and gold color swatches with a 4.5 to 1 contrast label"></div>
+          <div class="card-body">
+            <h3>Color Contrast Checker <span class="live-pill">live below</span></h3>
+            <p class="card-meta">HTML · CSS · vanilla JavaScript</p>
+            <p>Checks any text and background color pair against WCAG 2.2 AA and AAA. I wrote the luminance math from the W3C formula, with no libraries.</p>
+          </div>
+          <div class="card-links">
+            <a href="#demo">Try it</a>
+            <!-- EDIT: your GitHub repo URL -->
+            <a href="https://github.com/juileegiramkar/web_portfolio">Source</a>
+          </div>
+        </article>
+
+        <article class="card">
+          <img class="thumb-img" src="screenshots/a11y-lens.png" alt="A11y Lens: HTML editor on the left, accessibility report with a score and error list on the right" width="1280" height="720" loading="lazy">
+          <div class="card-body">
+            <h3>A11y Lens</h3>
+            <p class="card-meta">JavaScript · DOMParser · WCAG 2.2</p>
+            <p>Paste any HTML and get an instant accessibility report: missing alt text, unlabeled form fields, skipped headings, vague links, low contrast and missing captions. Each finding names the WCAG rule and how to fix it.</p>
+          </div>
+          <div class="card-links">
+            <a href="projects/a11y-lens/index.html">Open app</a>
+            <!-- EDIT: your GitHub repo URL -->
+            <a href="https://github.com/juileegiramkar/web_portfolio/tree/main/projects/a11y-lens">Source</a>
+          </div>
+        </article>
+
+        <article class="card">
+          <img class="thumb-img" src="screenshots/teaching-commons.png" alt="Teaching Commons: resource library with topic filters and resource cards" width="1280" height="720" loading="lazy">
+          <div class="card-body">
+            <h3>Teaching Commons</h3>
+            <p class="card-meta">HTML · CSS Grid · JavaScript</p>
+            <p>A responsive faculty resource website. Instructors can search guides and videos, filter by topic and format with live counts, sort by length, and save a spot in upcoming workshops. Includes a mobile menu and dark mode.</p>
+          </div>
+          <div class="card-links">
+            <a href="projects/teaching-commons/index.html">Live site</a>
+            <a href="https://github.com/juileegiramkar/web_portfolio/tree/main/projects/teaching-commons">Source</a>
+          </div>
+        </article>
+
+        <article class="card">
+          <img class="thumb-img" src="screenshots/blooms-explorer.png" alt="Bloom's Taxonomy Explorer: colored pyramid of six levels beside verbs and activity ideas" width="1280" height="720" loading="lazy">
+          <div class="card-body">
+            <h3>Bloom's Taxonomy Explorer</h3>
+            <p class="card-meta">SVG graphics · JavaScript</p>
+            <p>Interactive learning material for instructors. Click a level of the pyramid to see action verbs, activities and assessments, then build a measurable learning objective that the page checks for vague wording.</p>
+          </div>
+          <div class="card-links">
+            <a href="projects/blooms-explorer/index.html">Try it</a>
+            <a href="https://github.com/juileegiramkar/web_portfolio/tree/main/projects/blooms-explorer">Source</a>
+          </div>
+        </article>
+
+      </div>
+    </section>
+
+    <!-- DEMO -->
+    <section class="block" id="demo" aria-labelledby="demo-title">
+      <div class="sec-head">
+        <h2 id="demo-title">Live demo: is this text readable?</h2>
+        <p>University web pages must meet WCAG contrast rules. Pick two colors to see whether they pass.</p>
+      </div>
+      <div class="demo">
+        <form class="controls" id="contrastForm" novalidate>
+          <div class="field">
+            <label for="fgText">Text color</label>
+            <div class="color-input">
+              <input type="color" id="fgPicker" value="#0b4fa8" aria-label="Text color picker">
+              <input type="text" id="fgText" value="#0B4FA8" maxlength="7" spellcheck="false" autocomplete="off">
+            </div>
+          </div>
+          <div class="field">
+            <label for="bgText">Background color</label>
+            <div class="color-input">
+              <input type="color" id="bgPicker" value="#ffffff" aria-label="Background color picker">
+              <input type="text" id="bgText" value="#FFFFFF" maxlength="7" spellcheck="false" autocomplete="off">
+            </div>
+          </div>
+          <button type="button" class="swap" id="swapBtn">Swap colors</button>
+          <p class="error" id="errorMsg" role="alert"></p>
+        </form>
+        <div>
+          <div class="preview" id="preview">
+            <p class="big">Office hours: Tue 2–4 pm</p>
+            <p>Normal body text at 16px. Faculty can book a consultation through the CFETI calendar.</p>
+          </div>
+          <div class="ratio-row" aria-live="polite">
+            <span class="ratio" id="ratioOut">7.78:1</span>
+            <span class="card-meta">contrast ratio</span>
+          </div>
+          <ul class="results" id="results"></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- EXPERIENCE -->
+    <section class="block" id="experience" aria-labelledby="exp-title">
+      <div class="sec-head">
+        <h2 id="exp-title">Experience &amp; education</h2>
+      </div>
+      <div class="timeline">
+        <!-- EDIT: add any TA, tutoring, lab assistant, help desk or internship roles. Customer service counts. -->
+        <div class="entry">
+          <p class="when">[Start – End]</p>
+          <div>
+            <h3>[Role] · [Organization]</h3>
+            <ul>
+              <li>[What you did for people: answered questions, trained users, fixed problems]</li>
+              <li>[A technical task: built a page, kept a website updated, made materials]</li>
+            </ul>
+          </div>
+        </div>
+        <div class="entry">
+          <p class="when">[Year] – present</p>
+          <div>
+            <h3>M.S. Software Engineering · San José State University</h3>
+            <ul>
+              <li>[Relevant courses, e.g. Web UI Design, Software Systems Engineering]</li>
+            </ul>
+          </div>
+        </div>
+        <div class="entry">
+          <p class="when">[Years]</p>
+          <div>
+            <h3>[Bachelor's degree] · [University]</h3>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section class="block" id="contact" aria-labelledby="contact-title">
+      <div class="contact">
+        <div>
+          <h2 id="contact-title">Let's talk</h2>
+          <p class="lede" style="margin-top:8px">I'm looking for on-campus web and multimedia roles starting December 2026.</p>
+        </div>
+        <!-- EDIT: your SJSU email, LinkedIn and GitHub -->
+        <ul class="contact-list">
+          <li><a href="mailto:firstname.lastname@sjsu.edu">firstname.lastname@sjsu.edu</a></li>
+          <li><a href="https://www.linkedin.com/in/YOUR-PROFILE">LinkedIn</a></li>
+          <li><a href="https://github.com/juileegiramkar">GitHub</a></li>
+        </ul>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">Hand-coded in HTML, CSS and JavaScript. No frameworks. Checked for keyboard access and color contrast.</div>
+</footer>
+
+<script>
+(function () {
+  // ---------- Theme toggle ----------
+  var root = document.documentElement;
+  var btn = document.getElementById('themeBtn');
+  function isDark() {
+    var t = root.getAttribute('data-theme');
+    if (t) return t === 'dark';
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }
+  function syncBtn() {
+    var dark = isDark();
+    btn.textContent = dark ? 'Light mode' : 'Dark mode';
+    btn.setAttribute('aria-pressed', String(dark));
+  }
+  try { var saved = localStorage.getItem('theme'); if (saved) root.setAttribute('data-theme', saved); } catch (e) {}
+  syncBtn();
+  btn.addEventListener('click', function () {
+    var next = isDark() ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    try { localStorage.setItem('theme', next); } catch (e) {}
+    syncBtn();
+  });
+
+  // ---------- Contrast checker (WCAG 2.2) ----------
+  var fgPicker = document.getElementById('fgPicker');
+  var bgPicker = document.getElementById('bgPicker');
+  var fgText = document.getElementById('fgText');
+  var bgText = document.getElementById('bgText');
+  var preview = document.getElementById('preview');
+  var ratioOut = document.getElementById('ratioOut');
+  var results = document.getElementById('results');
+  var errorMsg = document.getElementById('errorMsg');
+
+  function normalizeHex(v) {
+    v = v.trim().replace(/^#?/, '#');
+    if (/^#[0-9a-f]{3}$/i.test(v)) v = '#' + v[1] + v[1] + v[2] + v[2] + v[3] + v[3];
+    return /^#[0-9a-f]{6}$/i.test(v) ? v.toUpperCase() : null;
+  }
+  // Relative luminance per https://www.w3.org/TR/WCAG22/#dfn-relative-luminance
+  function luminance(hex) {
+    var rgb = [1, 3, 5].map(function (i) {
+      var c = parseInt(hex.substr(i, 2), 16) / 255;
+      return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+    });
+    return 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2];
+  }
+  function contrast(a, b) {
+    var l1 = luminance(a), l2 = luminance(b);
+    return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+  }
+  var checks = [
+    { label: 'AA · normal text', min: 4.5 },
+    { label: 'AA · large text (24px+)', min: 3 },
+    { label: 'AAA · normal text', min: 7 },
+    { label: 'AAA · large text', min: 4.5 }
+  ];
+  function render() {
+    var fg = normalizeHex(fgText.value);
+    var bg = normalizeHex(bgText.value);
+    fgText.setAttribute('aria-invalid', String(!fg));
+    bgText.setAttribute('aria-invalid', String(!bg));
+    if (!fg || !bg) {
+      errorMsg.textContent = 'Enter colors as hex codes, like #1A2B3C or #FFF.';
+      return;
+    }
+    errorMsg.textContent = '';
+    fgPicker.value = fg.toLowerCase();
+    bgPicker.value = bg.toLowerCase();
+    preview.style.color = fg;
+    preview.style.background = bg;
+    var r = contrast(fg, bg);
+    var shown = Math.floor(r * 100) / 100; // round down so a borderline pair never shows as passing
+    ratioOut.textContent = shown.toFixed(2) + ':1';
+    results.innerHTML = '';
+    checks.forEach(function (c) {
+      var ok = r >= c.min;
+      var li = document.createElement('li');
+      li.innerHTML = '<span>' + c.label + ' <span class="card-meta">(' + c.min + ':1)</span></span>' +
+        '<span class="chip ' + (ok ? 'pass' : 'fail') + '">' + (ok ? 'Pass' : 'Fail') + '</span>';
+      results.appendChild(li);
+    });
+  }
+  fgPicker.addEventListener('input', function () { fgText.value = fgPicker.value.toUpperCase(); render(); });
+  bgPicker.addEventListener('input', function () { bgText.value = bgPicker.value.toUpperCase(); render(); });
+  fgText.addEventListener('input', render);
+  bgText.addEventListener('input', render);
+  document.getElementById('swapBtn').addEventListener('click', function () {
+    var t = fgText.value; fgText.value = bgText.value; bgText.value = t; render();
+  });
+  document.getElementById('contrastForm').addEventListener('submit', function (e) { e.preventDefault(); });
+  render();
+})();
+</script>
+</body>
+</html>

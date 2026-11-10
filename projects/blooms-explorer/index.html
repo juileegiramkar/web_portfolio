@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bloom's Taxonomy Explorer</title>
+<meta name="description" content="Interactive Bloom's Taxonomy pyramid with verbs, activity ideas and a learning objective builder for instructors.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* Layout: two panes. Clickable SVG pyramid on the left, details for the chosen level on the right; objective builder spans below. */
+:root {
+  --bg: #f4f3f8;
+  --surface: #ffffff;
+  --ink: #1e1b2e;
+  --muted: #5f5b72;
+  --line: #e0dde9;
+  --accent: #5a3fc0;
+  --accent-ink: #ffffff;
+  --l1: #3d7dd8; --l2: #2aa198; --l3: #5aa63c; --l4: #d9a21b; --l5: #e0702b; --l6: #c8417a;
+  --font-display: "Sora", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --radius: 14px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg: #13111c; --surface: #1c1928; --ink: #ecebf3; --muted: #a9a5bb; --line: #2f2b40; --accent: #a996ff; --accent-ink: #13111c; color-scheme: dark; }
+}
+:root[data-theme="dark"] { --bg: #13111c; --surface: #1c1928; --ink: #ecebf3; --muted: #a9a5bb; --line: #2f2b40; --accent: #a996ff; --accent-ink: #13111c; color-scheme: dark; }
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 1.05rem/1.55 var(--font-body); }
+h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; margin: 0; text-wrap: balance; }
+p { margin: 0; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 clamp(16px, 4vw, 36px); }
+
+header.top { padding: clamp(32px, 6vw, 56px) 0 24px; display: flex; justify-content: space-between; gap: 20px; align-items: end; flex-wrap: wrap; }
+header.top p { color: var(--muted); max-width: 60ch; margin-top: 10px; }
+h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); }
+.theme-btn { font: inherit; font-size: 0.9rem; background: var(--surface); border: 1px solid var(--line); color: var(--ink); padding: 6px 14px; border-radius: 999px; cursor: pointer; }
+
+.explorer { display: grid; grid-template-columns: minmax(280px, 1fr) 1.15fr; gap: 24px; align-items: start; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: clamp(16px, 3vw, 26px); }
+.pyramid svg { width: 100%; height: auto; display: block; }
+.band { cursor: pointer; transition: transform .2s, opacity .2s; transform-origin: center; }
+.band path { stroke: var(--surface); stroke-width: 3; }
+.band text { fill: #fff; font: 700 15px var(--font-display); pointer-events: none; }
+.band:hover path, .band:focus path { filter: brightness(1.08); }
+.band[aria-pressed="false"] { opacity: .55; }
+.band:focus { outline: none; }
+.band:focus-visible path { stroke: var(--ink); stroke-width: 4; }
+.axis { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--muted); margin-top: 10px; }
+.hint { font-size: 0.9rem; color: var(--muted); margin-top: 6px; }
+
+.detail { display: grid; gap: 18px; border-top: 6px solid var(--lc, var(--accent)); }
+.lvl-tag { font: 700 0.8rem var(--font-display); text-transform: uppercase; letter-spacing: .08em; color: var(--lc); }
+.detail h2 { font-size: 1.7rem; margin-top: 4px; }
+.detail .q { font-style: italic; color: var(--muted); }
+.detail h3 { font-size: 0.95rem; margin-bottom: 8px; }
+.verbs { display: flex; flex-wrap: wrap; gap: 6px; }
+.verb { font: inherit; font-size: 0.92rem; padding: 4px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); cursor: pointer; }
+.verb:hover, .verb.active { background: var(--lc); border-color: var(--lc); color: #fff; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.two ul { margin: 0; padding-left: 18px; color: var(--muted); font-size: 0.97rem; display: grid; gap: 4px; }
+
+.builder { margin: 24px 0; display: grid; gap: 18px; }
+.builder h2 { font-size: 1.35rem; }
+.form-row { display: grid; grid-template-columns: 180px 160px 1fr; gap: 12px; align-items: end; }
+.f { display: grid; gap: 6px; }
+.f label { font-weight: 700; font-size: 0.9rem; }
+.f input, .f select { font: inherit; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); min-width: 0; }
+.output { padding: 18px 20px; border-radius: 12px; background: var(--bg); border: 1px dashed var(--line); font-size: 1.12rem; }
+.output b { color: var(--lc, var(--accent)); }
+.tips { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; font-size: 0.93rem; }
+.tips li::before { content: "•"; margin-right: 8px; color: var(--muted); }
+.tips .ok { color: #2e7d32; } .tips .warn { color: #b26a00; }
+:root[data-theme="dark"] .tips .ok { color: #81c784; } :root[data-theme="dark"] .tips .warn { color: #ffb74d; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .tips .ok { color: #81c784; } :root:not([data-theme="light"]) .tips .warn { color: #ffb74d; } }
+.actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.btn { font: inherit; font-weight: 700; padding: 10px 16px; border-radius: 10px; border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink); cursor: pointer; }
+.btn.ghost { background: none; color: var(--accent); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.status { font-size: 0.9rem; color: var(--muted); align-self: center; }
+
+.saved h3 { font-size: 1rem; margin-bottom: 10px; }
+.mix { display: flex; height: 14px; border-radius: 999px; overflow: hidden; background: var(--bg); border: 1px solid var(--line); }
+.mix span { height: 100%; transition: width .3s; }
+.mix-legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: 0.85rem; color: var(--muted); margin-top: 8px; }
+.mix-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
+.obj-list { list-style: decimal; padding-left: 22px; margin: 14px 0 0; display: grid; gap: 8px; }
+.obj-list li { padding-left: 4px; }
+.obj-list .lv { font-size: 0.78rem; font-weight: 700; padding: 1px 8px; border-radius: 999px; color: #fff; margin-left: 6px; }
+.obj-list button { font: inherit; font-size: 0.85rem; background: none; border: 0; color: var(--muted); text-decoration: underline; cursor: pointer; margin-left: 6px; }
+.empty { color: var(--muted); font-size: 0.95rem; margin-top: 10px; }
+footer { padding: 24px 0 40px; color: var(--muted); font-size: 0.88rem; }
+
+@media (max-width: 820px) {
+  .explorer, .two { grid-template-columns: 1fr; }
+  .form-row { grid-template-columns: 1fr 1fr; }
+  .form-row .f:last-child { grid-column: 1 / -1; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Bloom's Taxonomy Explorer</h1>
+      <p>Pick a level of thinking to see verbs, class activities and assessment ideas, then build a measurable learning objective for your syllabus.</p>
+    </div>
+    <button class="theme-btn" id="themeBtn" type="button" aria-pressed="false">Dark mode</button>
+  </header>
+
+  <main>
+    <div class="explorer">
+      <div class="panel pyramid">
+        <svg id="pyr" viewBox="0 0 400 360" role="group" aria-label="Bloom's Taxonomy levels, from Remember at the base to Create at the top"></svg>
+        <div class="axis"><span>↓ Lower-order thinking</span><span>Higher-order thinking ↑</span></div>
+        <p class="hint">Click a level, or use Tab and Enter.</p>
+      </div>
+      <section class="panel detail" id="detail" aria-live="polite"></section>
+    </div>
+
+    <section class="panel builder" aria-labelledby="b-title" id="builder">
+      <h2 id="b-title">Build a learning objective</h2>
+      <div class="form-row">
+        <div class="f">
+          <label for="scope">By the end of the…</label>
+          <select id="scope"><option>course</option><option>unit</option><option selected>week</option><option>class session</option></select>
+        </div>
+        <div class="f">
+          <label for="verbSel">Verb</label>
+          <select id="verbSel"></select>
+        </div>
+        <div class="f">
+          <label for="content">What students will do it to</label>
+          <input id="content" type="text" value="the main causes of the 1906 San Francisco earthquake damage using primary sources" autocomplete="off">
+        </div>
+      </div>
+      <p class="output" id="output"></p>
+      <ul class="tips" id="tips" aria-label="Objective check"></ul>
+      <div class="actions">
+        <button class="btn" id="saveBtn" type="button">Add to my list</button>
+        <button class="btn ghost" id="copyBtn" type="button">Copy all objectives</button>
+        <span class="status" id="status" role="status"></span>
+      </div>
+      <div class="saved">
+        <h3>My objectives and their level mix</h3>
+        <div class="mix" id="mix" role="img" aria-label="No objectives yet"></div>
+        <div class="mix-legend" id="legend"></div>
+        <ol class="obj-list" id="objList"></ol>
+        <p class="empty" id="emptyMsg">Nothing saved yet. A balanced course usually mixes lower and higher levels.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>Portfolio project. Built with SVG, CSS and vanilla JavaScript. Levels follow the revised taxonomy (Anderson &amp; Krathwohl, 2001).</footer>
+</div>
+
+<script>
+(function () {
+  var LEVELS = [
+    { name: 'Remember', color: 'var(--l1)', hex: '#3d7dd8', q: 'Can students recall facts and basic concepts?',
+      verbs: ['define', 'list', 'identify', 'name', 'recall', 'label', 'state'],
+      acts: ['Flashcard warm-ups', 'Label a diagram', 'Quick recall quiz'], assess: ['Multiple choice', 'Matching', 'Fill in the blank'] },
+    { name: 'Understand', color: 'var(--l2)', hex: '#2aa198', q: 'Can students explain ideas in their own words?',
+      verbs: ['explain', 'summarize', 'classify', 'describe', 'paraphrase', 'compare', 'interpret'],
+      acts: ['One-minute paper', 'Concept map', 'Explain it to a partner'], assess: ['Short answer', 'Summary paragraph', 'Concept map'] },
+    { name: 'Apply', color: 'var(--l3)', hex: '#5aa63c', q: 'Can students use what they learned in a new situation?',
+      verbs: ['solve', 'use', 'demonstrate', 'calculate', 'implement', 'execute', 'sketch'],
+      acts: ['Worked problems in pairs', 'Lab exercise', 'Role play a scenario'], assess: ['Problem set', 'Lab report', 'Demonstration'] },
+    { name: 'Analyze', color: 'var(--l4)', hex: '#d9a21b', q: 'Can students break information into parts and see connections?',
+      verbs: ['analyze', 'differentiate', 'organize', 'examine', 'distinguish', 'investigate', 'deconstruct'],
+      acts: ['Case study discussion', 'Sort evidence into categories', 'Debug a flawed example'], assess: ['Case analysis', 'Compare-and-contrast essay', 'Data interpretation'] },
+    { name: 'Evaluate', color: 'var(--l5)', hex: '#e0702b', q: 'Can students justify a decision or judgment?',
+      verbs: ['evaluate', 'critique', 'justify', 'assess', 'defend', 'argue', 'prioritize'],
+      acts: ['Structured debate', 'Peer review with a rubric', 'Rank solutions and defend the order'], assess: ['Critique', 'Position paper', 'Peer evaluation'] },
+    { name: 'Create', color: 'var(--l6)', hex: '#c8417a', q: 'Can students produce new or original work?',
+      verbs: ['design', 'develop', 'construct', 'compose', 'formulate', 'plan', 'produce'],
+      acts: ['Design challenge', 'Build a prototype', 'Write a proposal'], assess: ['Project', 'Portfolio', 'Original research'] }
+  ];
+  var VAGUE = ['understand', 'know', 'learn', 'appreciate', 'be aware of', 'be familiar with', 'grasp'];
+  var current = 3;
+  var saved = [];
+  var $ = function (id) { return document.getElementById(id); };
+  var esc = function (s) { return s.replace(/[&<>"']/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); };
+
+  // ---- Draw pyramid: 6 trapezoid bands, base = Remember ----
+  function drawPyramid() {
+    var svg = $('pyr'), W = 400, H = 340, top = 10, n = LEVELS.length, bandH = H / n, ns = 'http://www.w3.org/2000/svg';
+    LEVELS.forEach(function (lv, i) {
+      var row = n - 1 - i;                    // row 0 is the top
+      var y1 = top + row * bandH, y2 = y1 + bandH;
+      var half = function (y) { return ((y - top) / H) * (W / 2 - 10) + 18; };
+      var cx = W / 2;
+      var d = 'M' + (cx - half(y1)) + ' ' + y1 + ' L' + (cx + half(y1)) + ' ' + y1 + ' L' + (cx + half(y2)) + ' ' + y2 + ' L' + (cx - half(y2)) + ' ' + y2 + ' Z';
+      var g = document.createElementNS(ns, 'g');
+      g.setAttribute('class', 'band'); g.setAttribute('tabindex', '0'); g.setAttribute('role', 'button');
+      g.setAttribute('aria-label', 'Level ' + (i + 1) + ': ' + lv.name);
+      g.dataset.i = i;
+      var p = document.createElementNS(ns, 'path'); p.setAttribute('d', d); p.setAttribute('fill', lv.hex);
+      var t = document.createElementNS(ns, 'text'); t.setAttribute('x', cx); t.setAttribute('y', (y1 + y2) / 2 + 5); t.setAttribute('text-anchor', 'middle');
+      t.textContent = lv.name;
+      if (row === 0) t.setAttribute('font-size', '13');
+      g.appendChild(p); g.appendChild(t); svg.appendChild(g);
+      g.addEventListener('click', function () { select(i); });
+      g.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); select(i); }
+        if (e.key === 'ArrowUp' && i < n - 1) { e.preventDefault(); focusBand(i + 1); }
+        if (e.key === 'ArrowDown' && i > 0) { e.preventDefault(); focusBand(i - 1); }
+      });
+    });
+  }
+  function focusBand(i) { document.querySelector('.band[data-i="' + i + '"]').focus(); }
+
+  function select(i) {
+    current = i;
+    var lv = LEVELS[i];
+    document.querySelectorAll('.band').forEach(function (b) { b.setAttribute('aria-pressed', String(+b.dataset.i === i)); });
+    var d = $('detail');
+    d.style.setProperty('--lc', lv.hex);
+    $('builder').style.setProperty('--lc', lv.hex);
+    d.innerHTML =
+      '<div><p class="lvl-tag">Level ' + (i + 1) + ' of 6</p><h2>' + lv.name + '</h2><p class="q">' + lv.q + '</p></div>' +
+      '<div><h3>Action verbs (click to use)</h3><div class="verbs">' + lv.verbs.map(function (v) { return '<button type="button" class="verb" data-v="' + v + '">' + v + '</button>'; }).join('') + '</div></div>' +
+      '<div class="two"><div><h3>In-class activities</h3><ul>' + lv.acts.map(function (a) { return '<li>' + a + '</li>'; }).join('') + '</ul></div>' +
+      '<div><h3>Ways to assess it</h3><ul>' + lv.assess.map(function (a) { return '<li>' + a + '</li>'; }).join('') + '</ul></div></div>';
+    $('verbSel').innerHTML = lv.verbs.map(function (v) { return '<option>' + v + '</option>'; }).join('');
+    d.querySelectorAll('.verb').forEach(function (b) {
+      b.addEventListener('click', function () { $('verbSel').value = b.dataset.v; buildObjective(); $('content').focus(); });
+    });
+    buildObjective();
+  }
+
+  function objectiveText() {
+    var c = $('content').value.trim().replace(/\.$/, '');
+    return 'By the end of the ' + $('scope').value + ', students will be able to ' + $('verbSel').value + ' ' + (c || '…') + '.';
+  }
+
+  function buildObjective() {
+    var v = $('verbSel').value, c = $('content').value.trim();
+    $('output').innerHTML = esc('By the end of the ' + $('scope').value + ', students will be able to ') + '<b>' + esc(v) + '</b> ' + esc(c.replace(/\.$/, '') || '…') + '.';
+    document.querySelectorAll('.verb').forEach(function (b) { b.classList.toggle('active', b.dataset.v === v); });
+    var tips = [];
+    var lower = c.toLowerCase();
+    var vague = VAGUE.filter(function (w) { return lower.indexOf(w) !== -1; });
+    tips.push(vague.length ? ['warn', 'Avoid “' + vague[0] + '”: it can’t be observed. Let the verb carry the action.'] : ['ok', 'Uses an observable action verb (' + LEVELS[current].name + ' level).']);
+    var words = c ? c.split(/\s+/).length : 0;
+    tips.push(words < 4 ? ['warn', 'Add more detail about the content or the conditions.'] : words > 30 ? ['warn', 'Long objective. Consider splitting it into two.'] : ['ok', 'Length is specific without being wordy.']);
+    tips.push(/\b(using|with|given|from|based on|in a|by)\b/i.test(c) ? ['ok', 'Includes a condition (how or with what).'] : ['warn', 'Optional: add a condition, like “using primary sources”.']);
+    $('tips').innerHTML = tips.map(function (t) { return '<li class="' + t[0] + '">' + t[1] + '</li>'; }).join('');
+    $('saveBtn').disabled = !c;
+  }
+
+  function renderSaved() {
+    $('emptyMsg').hidden = saved.length > 0;
+    $('objList').innerHTML = saved.map(function (o, i) {
+      return '<li>' + esc(o.text) + '<span class="lv" style="background:' + LEVELS[o.level].hex + '">' + LEVELS[o.level].name + '</span><button type="button" data-rm="' + i + '" aria-label="Remove objective ' + (i + 1) + '">Remove</button></li>';
+    }).join('');
+    var counts = LEVELS.map(function (_, i) { return saved.filter(function (o) { return o.level === i; }).length; });
+    $('mix').innerHTML = saved.length ? counts.map(function (n, i) { return n ? '<span style="width:' + (n / saved.length * 100) + '%;background:' + LEVELS[i].hex + '"></span>' : ''; }).join('') : '';
+    $('mix').setAttribute('aria-label', saved.length ? counts.map(function (n, i) { return n ? n + ' ' + LEVELS[i].name : ''; }).filter(Boolean).join(', ') : 'No objectives yet');
+    $('legend').innerHTML = LEVELS.map(function (l, i) { return '<span><i style="background:' + l.hex + '"></i>' + l.name + ' ' + counts[i] + '</span>'; }).join('');
+  }
+
+  $('objList').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-rm]'); if (!b) return;
+    saved.splice(+b.dataset.rm, 1); renderSaved();
+  });
+  $('saveBtn').addEventListener('click', function () {
+    saved.push({ text: objectiveText(), level: current });
+    renderSaved();
+    $('status').textContent = 'Added. You have ' + saved.length + ' objective' + (saved.length > 1 ? 's' : '') + '.';
+  });
+  $('copyBtn').addEventListener('click', function () {
+    if (!saved.length) { $('status').textContent = 'Add an objective first.'; return; }
+    var text = saved.map(function (o, i) { return (i + 1) + '. ' + o.text; }).join('\n');
+    navigator.clipboard.writeText(text).then(function () { $('status').textContent = 'Copied ' + saved.length + ' objectives.'; })
+      .catch(function () { $('status').textContent = 'Copy is blocked here. Select the list and press Ctrl+C.'; });
+  });
+  ['scope', 'verbSel', 'content'].forEach(function (id) { $(id).addEventListener('input', buildObjective); $(id).addEventListener('change', buildObjective); });
+
+  var root = document.documentElement, tb = $('themeBtn');
+  function dark() { var t = root.getAttribute('data-theme'); return t ? t === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches; }
+  function sync() { tb.textContent = dark() ? 'Light mode' : 'Dark mode'; tb.setAttribute('aria-pressed', String(dark())); }
+  tb.addEventListener('click', function () { root.setAttribute('data-theme', dark() ? 'light' : 'dark'); sync(); });
+  sync();
+
+  drawPyramid();
+  select(current);
+  // Start with two example objectives so the level mix is visible on load
+  saved = [
+    { text: 'By the end of the week, students will be able to identify the parts of a cell using a labeled diagram.', level: 0 },
+    { text: 'By the end of the unit, students will be able to design a simple experiment to test plant growth.', level: 5 }
+  ];
+  renderSaved();
+})();
+</script>
+</body>
+</html>

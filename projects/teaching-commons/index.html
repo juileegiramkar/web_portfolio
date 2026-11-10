@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Teaching Commons</title>
+<meta name="description" content="Demo faculty teaching resource site: searchable guides, videos and workshops for online and in-person teaching.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,600;7..72,700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Layout: classic site shell. Sticky header, banner, two-column library (filters | results) with a workshop rail below. */
+:root {
+  --bg: #fbfaf7;
+  --surface: #ffffff;
+  --ink: #1d2433;
+  --muted: #5c6577;
+  --line: #e3e1da;
+  --accent: #1f6f5c;      /* deep teal */
+  --accent-soft: #e2f1ec;
+  --highlight: #e8a33d;   /* amber */
+  --accent-ink: #ffffff;
+  --font-display: "Literata", Georgia, serif;
+  --font-body: "Figtree", "Segoe UI", system-ui, sans-serif;
+  --radius: 12px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12171c; --surface: #1a2128; --ink: #e9ecef; --muted: #a3acb6; --line: #2c353e;
+    --accent: #5cc2a6; --accent-soft: #1d3a33; --highlight: #f0b65c; --accent-ink: #0c1512; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12171c; --surface: #1a2128; --ink: #e9ecef; --muted: #a3acb6; --line: #2c353e;
+  --accent: #5cc2a6; --accent-soft: #1d3a33; --highlight: #f0b65c; --accent-ink: #0c1512; color-scheme: dark;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 1rem/1.6 var(--font-body); }
+a { color: var(--accent); text-underline-offset: 3px; }
+:focus-visible { outline: 3px solid var(--highlight); outline-offset: 2px; border-radius: 4px; }
+h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; text-wrap: balance; margin: 0; }
+p { margin: 0; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+.wrap { max-width: 1160px; margin: 0 auto; padding: 0 clamp(16px, 4vw, 36px); }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.skip { position: absolute; left: -999px; top: 8px; background: var(--accent); color: var(--accent-ink); padding: 8px 12px; border-radius: 6px; z-index: 20; }
+.skip:focus { left: 16px; }
+
+.demo-note { background: var(--highlight); color: #241500; font-size: 0.85rem; text-align: center; padding: 6px 16px; }
+
+/* Header + mobile nav */
+.site-head { position: sticky; top: 0; z-index: 10; background: var(--surface); border-bottom: 1px solid var(--line); }
+.site-head .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 64px; }
+.logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); font-family: var(--font-display); font-weight: 700; font-size: 1.15rem; }
+.logo svg { flex: none; }
+.nav-toggle { display: none; font: inherit; font-weight: 600; background: none; border: 1px solid var(--line); color: var(--ink); border-radius: 8px; padding: 8px 12px; cursor: pointer; }
+.main-nav ul { display: flex; gap: 4px; list-style: none; margin: 0; padding: 0; }
+.main-nav a { display: block; padding: 8px 12px; border-radius: 8px; color: var(--ink); text-decoration: none; font-weight: 500; }
+.main-nav a:hover, .main-nav a[aria-current="page"] { background: var(--accent-soft); color: var(--accent); }
+.theme-btn { font: inherit; font-size: 0.85rem; background: none; border: 1px solid var(--line); color: var(--ink); padding: 6px 12px; border-radius: 999px; cursor: pointer; }
+.head-right { display: flex; align-items: center; gap: 12px; }
+
+/* Banner */
+.banner { padding: clamp(36px, 6vw, 64px) 0 32px; display: grid; grid-template-columns: 1.3fr 1fr; gap: 40px; align-items: center; }
+.banner h1 { font-size: clamp(2rem, 4.5vw, 3rem); }
+.banner p { color: var(--muted); font-size: 1.1rem; margin-top: 14px; max-width: 56ch; }
+.search-big { margin-top: 24px; display: flex; gap: 8px; max-width: 560px; }
+.search-big input { flex: 1; min-width: 0; font: inherit; padding: 12px 16px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink); }
+.search-big button { font: inherit; font-weight: 600; padding: 12px 18px; border: 0; border-radius: 10px; background: var(--accent); color: var(--accent-ink); cursor: pointer; }
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.banner > * { min-width: 0; }
+.stat span { overflow-wrap: anywhere; }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; }
+.stat b { display: block; font-family: var(--font-display); font-size: 2rem; color: var(--accent); font-variant-numeric: tabular-nums; }
+.stat span { font-size: 0.9rem; color: var(--muted); }
+
+/* Library */
+.library { display: grid; grid-template-columns: 250px 1fr; gap: 32px; padding: 32px 0 48px; border-top: 1px solid var(--line); }
+.filters { display: grid; gap: 22px; align-content: start; position: sticky; top: 84px; }
+.filters fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: 8px; }
+.filters legend { font-weight: 700; font-size: 0.9rem; margin-bottom: 6px; }
+.check { display: flex; align-items: center; gap: 8px; font-size: 0.95rem; cursor: pointer; }
+.check input { width: 18px; height: 18px; accent-color: var(--accent); }
+.check .n { margin-left: auto; color: var(--muted); font-size: 0.8rem; font-variant-numeric: tabular-nums; }
+.reset { justify-self: start; font: inherit; font-size: 0.9rem; background: none; border: 0; color: var(--accent); text-decoration: underline; cursor: pointer; padding: 0; }
+.toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+.toolbar label { font-size: 0.9rem; color: var(--muted); }
+.toolbar select { font: inherit; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); }
+.count { font-weight: 600; }
+.results { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; list-style: none; padding: 0; margin: 0; }
+.res { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; display: grid; gap: 10px; align-content: start; border-top: 4px solid var(--c, var(--accent)); }
+.res h3 { font-size: 1.05rem; }
+.res p { color: var(--muted); font-size: 0.93rem; }
+.meta { display: flex; flex-wrap: wrap; gap: 6px; font-size: 0.78rem; font-weight: 600; }
+.pill { padding: 2px 9px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); }
+.pill.fmt { background: transparent; border: 1px solid var(--line); color: var(--muted); }
+.res .time { font-size: 0.82rem; color: var(--muted); }
+mark { background: color-mix(in srgb, var(--highlight) 45%, transparent); color: inherit; border-radius: 2px; }
+.empty { padding: 40px; text-align: center; border: 1px dashed var(--line); border-radius: var(--radius); color: var(--muted); }
+
+/* Workshops */
+.workshops { padding: 40px 0 56px; border-top: 1px solid var(--line); }
+.workshops h2 { font-size: 1.6rem; margin-bottom: 20px; }
+.ws-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; list-style: none; padding: 0; margin: 0; }
+.ws { display: grid; grid-template-columns: 64px 1fr; gap: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; }
+.date { text-align: center; border-radius: 10px; background: var(--accent); color: var(--accent-ink); padding: 8px 0; line-height: 1.1; align-self: start; }
+.date b { display: block; font-size: 1.5rem; font-family: var(--font-display); }
+.date span { font-size: 0.75rem; text-transform: uppercase; letter-spacing: .06em; }
+.ws h3 { font-size: 1rem; }
+.ws p { font-size: 0.88rem; color: var(--muted); }
+.rsvp { margin-top: 8px; font: inherit; font-size: 0.85rem; font-weight: 600; padding: 6px 12px; border-radius: 8px; border: 1px solid var(--accent); background: none; color: var(--accent); cursor: pointer; }
+.rsvp[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+footer { border-top: 1px solid var(--line); padding: 28px 0 40px; color: var(--muted); font-size: 0.88rem; }
+
+@media (max-width: 860px) {
+  .banner, .library { grid-template-columns: 1fr; }
+  .filters { position: static; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+  .nav-toggle { display: inline-block; }
+  .main-nav { display: none; position: absolute; left: 0; right: 0; top: 100%; background: var(--surface); border-bottom: 1px solid var(--line); padding: 8px 16px 16px; }
+  .main-nav.open { display: block; }
+  .main-nav ul { flex-direction: column; }
+}
+@media (max-width: 420px) { .stat { padding: 14px 12px; } .stat b { font-size: 1.6rem; } }
+</style>
+</head>
+<body>
+<a class="skip" href="#library">Skip to resources</a>
+<p class="demo-note">Portfolio demo with sample content. Not an official university website.</p>
+
+<header class="site-head">
+  <div class="wrap">
+    <a class="logo" href="#top">
+      <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect width="30" height="30" rx="8" fill="var(--accent)"/><path d="M7 11 15 7l8 4-8 4z" fill="var(--accent-ink)"/><path d="M10 13.5v5c0 1.5 2.5 3 5 3s5-1.5 5-3v-5l-5 2.5z" fill="var(--accent-ink)" opacity=".8"/></svg>
+      Teaching Commons
+    </a>
+    <div class="head-right">
+      <button class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="mainNav">Menu</button>
+      <nav class="main-nav" id="mainNav" aria-label="Main">
+        <ul>
+          <li><a href="#library" aria-current="page">Resources</a></li>
+          <li><a href="#workshops">Workshops</a></li>
+          <li><a href="#help">Get help</a></li>
+        </ul>
+      </nav>
+      <button class="theme-btn" id="themeBtn" type="button" aria-pressed="false">Dark</button>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+  <div class="wrap">
+    <section class="banner" aria-labelledby="banner-title">
+      <div>
+        <h1 id="banner-title">Find a teaching resource in under a minute.</h1>
+        <p>Guides, short videos and workshops on Canvas, accessibility, active learning and AI in the classroom, sorted by how long they take.</p>
+        <form class="search-big" role="search" id="searchForm">
+          <label for="q" class="sr-only">Search resources</label>
+          <input id="q" type="search" placeholder="Try “captions” or “rubric”" autocomplete="off">
+          <button type="submit">Search</button>
+        </form>
+      </div>
+      <div class="stats" aria-label="Library at a glance">
+        <div class="stat"><b id="statRes">0</b><span>resources</span></div>
+        <div class="stat"><b id="statTopics">0</b><span>topics</span></div>
+        <div class="stat"><b id="statWs">0</b><span>upcoming workshops</span></div>
+      </div>
+    </section>
+
+    <section class="library" id="library" aria-labelledby="lib-title">
+      <h2 id="lib-title" class="sr-only">Resource library</h2>
+      <aside class="filters" aria-label="Filters">
+        <fieldset id="topicFilters"><legend>Topic</legend></fieldset>
+        <fieldset id="formatFilters"><legend>Format</legend></fieldset>
+        <button class="reset" id="resetBtn" type="button">Clear all filters</button>
+      </aside>
+      <div>
+        <div class="toolbar">
+          <p class="count" id="count" aria-live="polite"></p>
+          <div>
+            <label for="sort">Sort by </label>
+            <select id="sort">
+              <option value="relevance">Topic A–Z</option>
+              <option value="short">Shortest first</option>
+              <option value="new">Newest first</option>
+            </select>
+          </div>
+        </div>
+        <ul class="results" id="results"></ul>
+      </div>
+    </section>
+
+    <section class="workshops" id="workshops" aria-labelledby="ws-title">
+      <h2 id="ws-title">Upcoming workshops</h2>
+      <ul class="ws-list" id="wsList"></ul>
+    </section>
+  </div>
+</main>
+
+<footer id="help">
+  <div class="wrap">Need one-on-one help? Book a 30-minute consultation with a teaching technology assistant. (Demo site built with HTML, CSS and vanilla JavaScript.)</div>
+</footer>
+
+<script>
+(function () {
+  var TOPICS = {
+    canvas: { name: 'Canvas LMS', color: '#2f6fd1' },
+    a11y: { name: 'Accessibility', color: '#1f6f5c' },
+    active: { name: 'Active learning', color: '#c2571a' },
+    ai: { name: 'AI in teaching', color: '#7a4fc9' },
+    assess: { name: 'Assessment', color: '#b0386a' }
+  };
+  var RESOURCES = [
+    { t: 'Set up your Canvas course in 10 steps', topic: 'canvas', fmt: 'Guide', min: 15, date: '2026-08-12', d: 'From blank shell to published course: modules, syllabus, home page and notifications.' },
+    { t: 'Adding captions to lecture videos', topic: 'a11y', fmt: 'Video', min: 6, date: '2026-09-03', d: 'Turn on auto-captions, fix common errors, and upload a caption file.' },
+    { t: 'Writing alt text for charts and diagrams', topic: 'a11y', fmt: 'Guide', min: 10, date: '2026-10-01', d: 'A three-sentence formula for describing data images to screen reader users.' },
+    { t: 'Think-pair-share in a 75-minute class', topic: 'active', fmt: 'Guide', min: 8, date: '2026-07-21', d: 'Timing, prompts and how to collect answers so quiet students participate.' },
+    { t: 'Building a grading rubric in Canvas', topic: 'canvas', fmt: 'Video', min: 9, date: '2026-09-18', d: 'Create a rubric, attach it to an assignment and use it in SpeedGrader.' },
+    { t: 'Writing an AI policy for your syllabus', topic: 'ai', fmt: 'Template', min: 12, date: '2026-10-20', d: 'Three sample policies, from "AI allowed with citation" to "no AI use".' },
+    { t: 'Designing assignments AI can’t shortcut', topic: 'ai', fmt: 'Workshop recording', min: 45, date: '2026-10-08', d: 'Process-based work, local context and reflection prompts that show student thinking.' },
+    { t: 'Low-stakes quizzes that improve recall', topic: 'assess', fmt: 'Guide', min: 7, date: '2026-06-30', d: 'Research on retrieval practice and how to set up ungraded Canvas quizzes.' },
+    { t: 'Accessible PDFs and Word documents', topic: 'a11y', fmt: 'Checklist', min: 5, date: '2026-08-28', d: 'Headings, reading order, link text and table headers, checked in five minutes.' },
+    { t: 'Using Canvas Discussions well', topic: 'canvas', fmt: 'Guide', min: 11, date: '2026-07-09', d: 'Prompts that get real replies, plus grading settings that save you time.' },
+    { t: 'Gallery walks for online classes', topic: 'active', fmt: 'Video', min: 7, date: '2026-09-25', d: 'Run a gallery walk with shared slides and timed breakout rooms.' },
+    { t: 'Peer review that students take seriously', topic: 'assess', fmt: 'Template', min: 14, date: '2026-10-14', d: 'A structured feedback form and a Canvas peer review setup.' },
+    { t: 'Color contrast for slides and course pages', topic: 'a11y', fmt: 'Video', min: 4, date: '2026-10-29', d: 'Check any color pair against WCAG AA in under a minute.' },
+    { t: 'Prompting AI to draft quiz questions', topic: 'ai', fmt: 'Guide', min: 10, date: '2026-11-02', d: 'Prompts that produce useful drafts, and what to check before you use them.' }
+  ];
+  var WORKSHOPS = [
+    { title: 'Canvas course setup for spring', date: '2026-12-09', time: '10:00–11:00 am', where: 'Zoom' },
+    { title: 'Captions and accessible video', date: '2026-12-15', time: '1:00–2:00 pm', where: 'Library room 225' },
+    { title: 'AI and academic integrity', date: '2027-01-14', time: '12:00–1:30 pm', where: 'Hybrid' },
+    { title: 'Active learning in large lectures', date: '2027-01-21', time: '3:00–4:00 pm', where: 'Zoom' }
+  ];
+
+  var state = { q: '', topics: new Set(), formats: new Set(), sort: 'relevance' };
+  var $ = function (id) { return document.getElementById(id); };
+  var esc = function (s) { return s.replace(/[&<>"']/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); };
+
+  function highlight(text) {
+    var safe = esc(text);
+    if (!state.q) return safe;
+    var re = new RegExp('(' + state.q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'ig');
+    return safe.replace(re, '<mark>$1</mark>');
+  }
+
+  function matches(r, ignore) {
+    var q = state.q.toLowerCase();
+    if (q && (r.t + ' ' + r.d + ' ' + TOPICS[r.topic].name).toLowerCase().indexOf(q) === -1) return false;
+    if (ignore !== 'topic' && state.topics.size && !state.topics.has(r.topic)) return false;
+    if (ignore !== 'format' && state.formats.size && !state.formats.has(r.fmt)) return false;
+    return true;
+  }
+
+  function buildFilters() {
+    var formats = Array.from(new Set(RESOURCES.map(function (r) { return r.fmt; }))).sort();
+    $('topicFilters').insertAdjacentHTML('beforeend', Object.keys(TOPICS).map(function (k) {
+      return '<label class="check"><input type="checkbox" data-kind="topic" value="' + k + '"> ' + TOPICS[k].name + '<span class="n" data-count="topic-' + k + '"></span></label>';
+    }).join(''));
+    $('formatFilters').insertAdjacentHTML('beforeend', formats.map(function (f) {
+      return '<label class="check"><input type="checkbox" data-kind="format" value="' + f + '"> ' + f + '<span class="n" data-count="format-' + f + '"></span></label>';
+    }).join(''));
+    document.querySelectorAll('.filters input').forEach(function (cb) {
+      cb.addEventListener('change', function () {
+        var set = cb.dataset.kind === 'topic' ? state.topics : state.formats;
+        cb.checked ? set.add(cb.value) : set.delete(cb.value);
+        render();
+      });
+    });
+  }
+
+  function updateCounts() {
+    // Facet counts: how many results each option would give with the other filters applied
+    document.querySelectorAll('[data-count]').forEach(function (el) {
+      var parts = el.dataset.count.split('-'), kind = parts[0], val = parts.slice(1).join('-');
+      var n = RESOURCES.filter(function (r) { return matches(r, kind) && (kind === 'topic' ? r.topic === val : r.fmt === val); }).length;
+      el.textContent = n;
+    });
+  }
+
+  function render() {
+    var list = RESOURCES.filter(function (r) { return matches(r); });
+    if (state.sort === 'short') list.sort(function (a, b) { return a.min - b.min; });
+    else if (state.sort === 'new') list.sort(function (a, b) { return b.date.localeCompare(a.date); });
+    else list.sort(function (a, b) { return TOPICS[a.topic].name.localeCompare(TOPICS[b.topic].name) || a.t.localeCompare(b.t); });
+
+    $('count').textContent = list.length + (list.length === 1 ? ' resource' : ' resources') + (state.q ? ' for “' + state.q + '”' : '');
+    $('results').innerHTML = list.length ? list.map(function (r) {
+      var tp = TOPICS[r.topic];
+      return '<li class="res" style="--c:' + tp.color + '">' +
+        '<div class="meta"><span class="pill">' + tp.name + '</span><span class="pill fmt">' + r.fmt + '</span></div>' +
+        '<h3>' + highlight(r.t) + '</h3><p>' + highlight(r.d) + '</p>' +
+        '<span class="time">' + r.min + ' min · updated ' + new Date(r.date + 'T12:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + '</span></li>';
+    }).join('') : '<li class="empty">No resources match. Try a shorter search or clear the filters.</li>';
+    updateCounts();
+  }
+
+  function renderWorkshops() {
+    $('wsList').innerHTML = WORKSHOPS.map(function (w, i) {
+      var d = new Date(w.date + 'T12:00');
+      return '<li class="ws"><div class="date"><b>' + d.getDate() + '</b><span>' + d.toLocaleDateString('en-US', { month: 'short' }) + '</span></div>' +
+        '<div><h3>' + w.title + '</h3><p>' + d.toLocaleDateString('en-US', { weekday: 'long' }) + ', ' + w.time + ' · ' + w.where + '</p>' +
+        '<button class="rsvp" type="button" aria-pressed="false" data-i="' + i + '">Save my spot</button></div></li>';
+    }).join('');
+    $('wsList').addEventListener('click', function (e) {
+      var b = e.target.closest('.rsvp'); if (!b) return;
+      var on = b.getAttribute('aria-pressed') !== 'true';
+      b.setAttribute('aria-pressed', String(on));
+      b.textContent = on ? 'Spot saved ✓' : 'Save my spot';
+    });
+  }
+
+  $('searchForm').addEventListener('submit', function (e) { e.preventDefault(); state.q = $('q').value.trim(); render(); $('library').scrollIntoView(); });
+  $('q').addEventListener('input', function () { state.q = $('q').value.trim(); render(); });
+  $('sort').addEventListener('change', function () { state.sort = this.value; render(); });
+  $('resetBtn').addEventListener('click', function () {
+    state.topics.clear(); state.formats.clear(); state.q = ''; $('q').value = '';
+    document.querySelectorAll('.filters input').forEach(function (c) { c.checked = false; });
+    render();
+  });
+
+  // Mobile nav
+  $('navToggle').addEventListener('click', function () {
+    var open = this.getAttribute('aria-expanded') !== 'true';
+    this.setAttribute('aria-expanded', String(open));
+    $('mainNav').classList.toggle('open', open);
+  });
+  $('mainNav').addEventListener('click', function (e) {
+    if (e.target.tagName === 'A') { $('mainNav').classList.remove('open'); $('navToggle').setAttribute('aria-expanded', 'false'); }
+  });
+
+  // Theme
+  var root = document.documentElement, tb = $('themeBtn');
+  function dark() { var t = root.getAttribute('data-theme'); return t ? t === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches; }
+  function sync() { tb.textContent = dark() ? 'Light' : 'Dark'; tb.setAttribute('aria-pressed', String(dark())); }
+  tb.addEventListener('click', function () { root.setAttribute('data-theme', dark() ? 'light' : 'dark'); sync(); });
+  sync();
+
+  $('statRes').textContent = RESOURCES.length;
+  $('statTopics').textContent = Object.keys(TOPICS).length;
+  $('statWs').textContent = WORKSHOPS.length;
+  buildFilters();
+  renderWorkshops();
+  render();
+})();
+</script>
+</body>
+</html>
