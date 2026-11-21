@@ -90,7 +90,33 @@ p { margin: 0; }
 .count { font-weight: 600; }
 .results { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; list-style: none; padding: 0; margin: 0; }
 .res { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; display: grid; gap: 10px; align-content: start; border-top: 4px solid var(--c, var(--accent)); }
+.res { position: relative; transition: transform .15s, box-shadow .15s; }
+.res:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(0,0,0,.12); }
 .res h3 { font-size: 1.05rem; }
+.res-link { all: unset; cursor: pointer; }
+.res-link::after { content: ""; position: absolute; inset: 0; border-radius: var(--radius); }
+.res-link:focus-visible::after { outline: 3px solid var(--highlight); outline-offset: 2px; }
+.res .open-hint { font-size: 0.82rem; font-weight: 600; color: var(--accent); }
+
+/* Resource detail dialog */
+dialog.detail { width: min(680px, calc(100% - 32px)); max-height: calc(100% - 48px); padding: 0; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); color: var(--ink); box-shadow: 0 24px 60px rgba(0,0,0,.35); }
+dialog.detail::backdrop { background: rgba(10, 14, 20, .55); }
+.d-head { padding: 22px 24px 18px; border-top: 6px solid var(--c, var(--accent)); border-bottom: 1px solid var(--line); display: grid; gap: 10px; position: sticky; top: 0; background: var(--surface); }
+.d-head h2 { font-size: 1.45rem; padding-right: 40px; }
+.d-close { position: absolute; top: 16px; right: 16px; width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line); background: var(--bg); color: var(--ink); font-size: 1.2rem; line-height: 1; cursor: pointer; }
+.d-body { padding: 20px 24px 24px; display: grid; gap: 18px; }
+.d-body h3 { font-size: 1rem; margin-bottom: 8px; }
+.d-body ol { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
+.d-tip { background: var(--accent-soft); border-radius: 10px; padding: 12px 14px; font-size: 0.95rem; }
+.d-tip b { color: var(--accent); }
+.d-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.d-btn { font: inherit; font-weight: 600; font-size: 0.9rem; padding: 8px 14px; border-radius: 8px; border: 1px solid var(--accent); background: none; color: var(--accent); cursor: pointer; }
+.d-btn[aria-pressed="true"], .d-btn.primary { background: var(--accent); color: var(--accent-ink); }
+.d-status { font-size: 0.85rem; color: var(--muted); }
+.related { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.related button { all: unset; cursor: pointer; display: block; width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; font-weight: 600; }
+.related button:hover, .related button:focus-visible { border-color: var(--accent); color: var(--accent); }
+.related small { display: block; font-weight: 400; color: var(--muted); }
 .res p { color: var(--muted); font-size: 0.93rem; }
 .meta { display: flex; flex-wrap: wrap; gap: 6px; font-size: 0.78rem; font-weight: 600; }
 .pill { padding: 2px 9px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); }
@@ -197,6 +223,26 @@ footer { border-top: 1px solid var(--line); padding: 28px 0 40px; color: var(--m
   </div>
 </main>
 
+<dialog class="detail" id="detail" aria-labelledby="dTitle">
+  <div class="d-head" id="dHead">
+    <button class="d-close" id="dClose" type="button" aria-label="Close">×</button>
+    <div class="meta" id="dMeta"></div>
+    <h2 id="dTitle"></h2>
+    <p class="time" id="dTime"></p>
+  </div>
+  <div class="d-body">
+    <p id="dIntro"></p>
+    <div><h3>What you’ll do</h3><ol id="dSteps"></ol></div>
+    <p class="d-tip" id="dTip"></p>
+    <div class="d-actions">
+      <button class="d-btn" id="dHelpful" type="button" aria-pressed="false">Mark as helpful</button>
+      <button class="d-btn" id="dCopy" type="button">Copy link</button>
+      <span class="d-status" id="dStatus" role="status"></span>
+    </div>
+    <div><h3>Related resources</h3><ul class="related" id="dRelated"></ul></div>
+  </div>
+</dialog>
+
 <footer id="help">
   <div class="wrap">Need one-on-one help? Book a 30-minute consultation with a teaching technology assistant. (Demo site built with HTML, CSS and vanilla JavaScript.)</div>
 </footer>
@@ -226,6 +272,28 @@ footer { border-top: 1px solid var(--line); padding: 28px 0 40px; color: var(--m
     { t: 'Color contrast for slides and course pages', topic: 'a11y', fmt: 'Video', min: 4, date: '2026-10-29', d: 'Check any color pair against WCAG AA in under a minute.' },
     { t: 'Prompting AI to draft quiz questions', topic: 'ai', fmt: 'Guide', min: 10, date: '2026-11-02', d: 'Prompts that produce useful drafts, and what to check before you use them.' }
   ];
+  // Detail content for each resource, in the same order as RESOURCES
+  var DETAILS = [
+    { steps: ['Create modules for each week and add your readings and assignments to them.', 'Paste your syllabus into the Syllabus page and attach the PDF.', 'Build a home page with a welcome message, your contact info and a "Start here" link.', 'Check notification settings, preview the course as a student, then click Publish.'], tip: 'Use Student View before you publish. It shows locked modules and broken links students would hit.' },
+    { steps: ['Upload your video and turn on automatic captions.', 'Play it back and fix names, technical terms and punctuation.', 'Download the corrected caption file (.vtt) as a backup.', 'Upload the file to Canvas or YouTube alongside the video.'], tip: 'Auto-captions are usually 80–90% accurate. Fix them before students rely on them.' },
+    { steps: ['Say what kind of chart it is and what it shows.', 'State the main finding in one sentence, with the key number.', 'Point to where the full data lives, such as a table below the image.', 'Keep alt text under about 150 characters and put longer detail in the page text.'], tip: 'Ask yourself: what would a sighted student take away in five seconds? Write that.' },
+    { steps: ['Pose one open question and give everyone one minute to think alone.', 'Have neighbors share answers for three minutes.', 'Call on three or four pairs, including some who have not spoken yet.', 'Collect one answer per pair on a card or a quick online form.'], tip: 'Write the question on the slide so students can see it while they think.' },
+    { steps: ['Open the assignment and click "+ Rubric".', 'Add a row per criterion and describe each rating level.', 'Turn on "Use this rubric for grading".', 'Grade in SpeedGrader by clicking the rating that fits.'], tip: 'Share the rubric with students when you post the assignment, not after grading.' },
+    { steps: ['Pick the sample policy closest to how you teach.', 'Name the tools and tasks where AI is and is not allowed.', 'Explain how students should cite AI help.', 'Add the policy to your syllabus and go over it in the first week.'], tip: 'Give one example of acceptable use and one of unacceptable use. Examples prevent most questions.' },
+    { steps: ['Watch the 45-minute recording, or skip to the chapters you need.', 'Break one big assignment into drafts with feedback on each.', 'Tie prompts to class discussions, local data or students’ own experience.', 'Add a short reflection where students explain their choices.'], tip: 'Ask for the process as well as the product: outlines, drafts and notes are hard to fake.' },
+    { steps: ['Read the two-page summary of retrieval practice research.', 'Create a short Canvas quiz with 3–5 questions per week.', 'Set it to ungraded or very low points, with unlimited attempts.', 'Review the results to see which topics need another pass.'], tip: 'Mix in one question from an earlier week. Spaced recall helps memory most.' },
+    { steps: ['Use built-in heading styles instead of bold text for titles.', 'Write link text that says where it goes, never "click here".', 'Mark the header row in every table.', 'Run the built-in accessibility checker before saving as PDF.'], tip: 'In Word, use Review → Check Accessibility. It catches most problems in seconds.' },
+    { steps: ['Write a prompt that asks for an opinion backed by the reading.', 'Require one original post and two replies.', 'Set a due date for the first post a few days before replies are due.', 'Grade with a simple three-level rubric.'], tip: 'Reply to a few posts early in the week. Students write more when they know you read them.' },
+    { steps: ['Make a shared slide deck with one slide per group.', 'Give groups 10 minutes in breakout rooms to fill their slide.', 'Have everyone visit other slides and add comments.', 'Bring the class back to discuss common themes.'], tip: 'Use a visible timer, and give a two-minute warning before rooms close.' },
+    { steps: ['Download the structured feedback form.', 'Turn on peer review in the Canvas assignment settings.', 'Assign two reviewers per student automatically.', 'Grade the quality of feedback, not just completion.'], tip: 'Show an example of strong feedback before students start reviewing.' },
+    { steps: ['Pick your text and background colors.', 'Check the pair in a contrast checker.', 'Aim for at least 4.5:1 for body text and 3:1 for large headings.', 'Fix failing pairs by darkening the text or lightening the background.'], tip: 'Avoid light gray text on white. It is the most common contrast failure.' },
+    { steps: ['Give the AI your learning objective and the reading.', 'Ask for questions at a specific level, such as "apply" or "analyze".', 'Check every answer key against the source material.', 'Edit wording to match how you teach the topic.'], tip: 'Never use AI questions unreviewed. Wrong answer keys are common.' }
+  ];
+  RESOURCES.forEach(function (r, i) {
+    r.id = r.t.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    r.steps = DETAILS[i].steps; r.tip = DETAILS[i].tip;
+  });
+
   var WORKSHOPS = [
     { title: 'Canvas course setup for spring', date: '2026-12-09', time: '10:00–11:00 am', where: 'Zoom' },
     { title: 'Captions and accessible video', date: '2026-12-15', time: '1:00–2:00 pm', where: 'Library room 225' },
@@ -289,11 +357,67 @@ footer { border-top: 1px solid var(--line); padding: 28px 0 40px; color: var(--m
       var tp = TOPICS[r.topic];
       return '<li class="res" style="--c:' + tp.color + '">' +
         '<div class="meta"><span class="pill">' + tp.name + '</span><span class="pill fmt">' + r.fmt + '</span></div>' +
-        '<h3>' + highlight(r.t) + '</h3><p>' + highlight(r.d) + '</p>' +
-        '<span class="time">' + r.min + ' min · updated ' + new Date(r.date + 'T12:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + '</span></li>';
+        '<h3><button type="button" class="res-link" data-id="' + r.id + '">' + highlight(r.t) + '</button></h3><p>' + highlight(r.d) + '</p>' +
+        '<span class="time">' + r.min + ' min · updated ' + fmtDate(r.date) + '</span><span class="open-hint" aria-hidden="true">Open →</span></li>';
     }).join('') : '<li class="empty">No resources match. Try a shorter search or clear the filters.</li>';
     updateCounts();
   }
+
+  function fmtDate(d) { return new Date(d + 'T12:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); }
+  var helpful = new Set(), lastFocus = null, dlg = $('detail');
+
+  function openDetail(id, fromHash) {
+    var r = RESOURCES.find(function (x) { return x.id === id; });
+    if (!r) return;
+    var tp = TOPICS[r.topic];
+    $('dHead').style.setProperty('--c', tp.color);
+    $('dMeta').innerHTML = '<span class="pill">' + tp.name + '</span><span class="pill fmt">' + r.fmt + '</span>';
+    $('dTitle').textContent = r.t;
+    $('dTime').textContent = r.min + ' min · updated ' + fmtDate(r.date);
+    $('dIntro').textContent = r.d;
+    $('dSteps').innerHTML = r.steps.map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('');
+    $('dTip').innerHTML = '<b>Tip:</b> ' + esc(r.tip);
+    var on = helpful.has(r.id);
+    $('dHelpful').setAttribute('aria-pressed', String(on));
+    $('dHelpful').textContent = on ? 'Marked helpful ✓' : 'Mark as helpful';
+    $('dHelpful').dataset.id = r.id;
+    $('dStatus').textContent = '';
+    var rel = RESOURCES.filter(function (x) { return x.topic === r.topic && x.id !== r.id; }).slice(0, 3);
+    $('dRelated').innerHTML = rel.map(function (x) {
+      return '<li><button type="button" data-id="' + x.id + '">' + esc(x.t) + '<small>' + x.fmt + ' · ' + x.min + ' min</small></button></li>';
+    }).join('');
+    if (!dlg.open) { if (!fromHash) lastFocus = document.activeElement; dlg.showModal(); }
+    dlg.scrollTop = 0;
+    $('dClose').focus();
+    if (location.hash !== '#res-' + r.id) history.replaceState(null, '', '#res-' + r.id);
+  }
+  function closeDetail() { if (dlg.open) dlg.close(); }
+  dlg.addEventListener('close', function () {
+    if (location.hash.indexOf('#res-') === 0) history.replaceState(null, '', location.pathname + location.search);
+    if (lastFocus && document.contains(lastFocus)) lastFocus.focus();
+  });
+  dlg.addEventListener('click', function (e) { if (e.target === dlg) closeDetail(); });   // click on the backdrop
+  $('dClose').addEventListener('click', closeDetail);
+  $('results').addEventListener('click', function (e) {
+    var b = e.target.closest('.res-link'); if (b) openDetail(b.dataset.id);
+  });
+  $('dRelated').addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-id]'); if (b) openDetail(b.dataset.id);
+  });
+  $('dHelpful').addEventListener('click', function () {
+    var id = this.dataset.id, on = !helpful.has(id);
+    on ? helpful.add(id) : helpful.delete(id);
+    this.setAttribute('aria-pressed', String(on));
+    this.textContent = on ? 'Marked helpful ✓' : 'Mark as helpful';
+    $('dStatus').textContent = on ? 'Thanks for the feedback.' : '';
+  });
+  $('dCopy').addEventListener('click', function () {
+    var url = location.href;
+    navigator.clipboard.writeText(url).then(function () { $('dStatus').textContent = 'Link copied.'; })
+      .catch(function () { $('dStatus').textContent = 'Copy blocked. The link is in your address bar.'; });
+  });
+  function fromHash() { var h = location.hash; if (h.indexOf('#res-') === 0) openDetail(h.slice(5), true); }
+  window.addEventListener('hashchange', fromHash);
 
   function renderWorkshops() {
     $('wsList').innerHTML = WORKSHOPS.map(function (w, i) {
@@ -342,6 +466,7 @@ footer { border-top: 1px solid var(--line); padding: 28px 0 40px; color: var(--m
   buildFilters();
   renderWorkshops();
   render();
+  fromHash();
 })();
 </script>
 </body>
